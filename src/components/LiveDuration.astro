@@ -8,27 +8,41 @@ const { startDate = "", endDate = null } = Astro.props
 
 const formatDuration = (startDateStr: string, endDateStr?: string | null) => {
     if (!startDateStr) {
-    return ""
+        return ""
     }
 
     const start = new Date(startDateStr)
     const end = endDateStr ? new Date(endDateStr) : new Date()
 
-    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-    return ""
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) {
+        return ""
     }
 
-  let totalMonths = (end.getFullYear() - start.getFullYear()) * 12
+    let totalMonths = (end.getFullYear() - start.getFullYear()) * 12
     totalMonths += end.getMonth() - start.getMonth()
 
     if (end.getDate() < start.getDate()) {
-    totalMonths -= 1
+        totalMonths -= 1
     }
 
     totalMonths = Math.max(0, totalMonths)
 
+    const monthStart = new Date(start)
+    monthStart.setMonth(monthStart.getMonth() + totalMonths)
+
+    const nextMonthStart = new Date(monthStart)
+    nextMonthStart.setMonth(nextMonthStart.getMonth() + 1)
+
+    const elapsedInCurrentMonth = end.getTime() - monthStart.getTime()
+    const currentMonthDuration = nextMonthStart.getTime() - monthStart.getTime()
+    const ROUND_UP_THRESHOLD = 0.4
+
+    if (currentMonthDuration > 0 && elapsedInCurrentMonth / currentMonthDuration >= ROUND_UP_THRESHOLD) {
+        totalMonths += 1
+    }
+
     if (totalMonths === 0) {
-    return "Less than 1 month"
+        return "Less than 1 month"
     }
 
     const years = Math.floor(totalMonths / 12)
@@ -38,11 +52,11 @@ const formatDuration = (startDateStr: string, endDateStr?: string | null) => {
     const monthLabel = months === 1 ? "month" : "months"
 
     if (years > 0 && months > 0) {
-    return `${years} ${yearLabel} and ${months} ${monthLabel}`
+        return `${years} ${yearLabel} and ${months} ${monthLabel}`
     }
 
     if (years > 0) {
-    return `${years} ${yearLabel}`
+        return `${years} ${yearLabel}`
     }
 
     return `${months} ${monthLabel}`
@@ -65,7 +79,7 @@ const fallbackDuration = formatDuration(startDate, endDate)
     const start = new Date(startDateStr);
     const end = endDateStr ? new Date(endDateStr) : new Date();
 
-    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) {
         return "";
     }
 
@@ -77,6 +91,20 @@ const fallbackDuration = formatDuration(startDate, endDate)
     }
 
     totalMonths = Math.max(0, totalMonths);
+
+    const monthStart = new Date(start);
+    monthStart.setMonth(monthStart.getMonth() + totalMonths);
+
+    const nextMonthStart = new Date(monthStart);
+    nextMonthStart.setMonth(nextMonthStart.getMonth() + 1);
+
+    const elapsedInCurrentMonth = end.getTime() - monthStart.getTime();
+    const currentMonthDuration = nextMonthStart.getTime() - monthStart.getTime();
+    const ROUND_UP_THRESHOLD = 0.4;
+
+    if (currentMonthDuration > 0 && elapsedInCurrentMonth / currentMonthDuration >= ROUND_UP_THRESHOLD) {
+        totalMonths += 1;
+    }
 
     if (totalMonths === 0) {
         return "Less than 1 month";
