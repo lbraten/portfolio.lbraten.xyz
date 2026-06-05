@@ -1,5 +1,6 @@
 ---
 import Section from "../Section.astro"
+import LiveDuration from "../LiveDuration.astro"
 import { work } from "@cv"
 
 import HTML from "@/icons/html.astro"
@@ -18,58 +19,6 @@ import SwiftUI from "@/icons/swiftui.astro"
 import Kotlin from "@/icons/kotlin.astro"
 import Flutter from "@/icons/flutter.astro"
 import Jira from "@/icons/Jira.astro";
-
-const formatDuration = (startDateStr: string, endDateStr?: string | null) => {
-  if (!startDateStr) {
-    return ""
-  }
-
-  const start = new Date(startDateStr)
-  const end = endDateStr ? new Date(endDateStr) : new Date()
-
-  let totalMonths = (end.getFullYear() - start.getFullYear()) * 12
-  totalMonths += end.getMonth() - start.getMonth()
-
-  if (end.getDate() < start.getDate()) {
-    totalMonths -= 1
-  }
-
-  totalMonths = Math.max(0, totalMonths)
-
-  if (totalMonths === 0) {
-    return "Less than 1 month"
-  }
-
-  const years = Math.floor(totalMonths / 12)
-  const months = totalMonths % 12
-
-  const yearLabel = years === 1 ? "year" : "years"
-  const monthLabel = months === 1 ? "month" : "months"
-
-  if (years > 0 && months > 0) {
-    return `${years} ${yearLabel} and ${months} ${monthLabel}`
-  }
-
-  if (years > 0) {
-    return `${years} ${yearLabel}`
-  }
-
-  return `${months} ${monthLabel}`
-}
-
-const formatLocationType = (locationType?: string, duration?: string) => {
-  const base = locationType ? locationType.split("•")[0].trim() : ""
-
-  if (!duration) {
-    return base
-  }
-
-  if (!base) {
-    return duration
-  }
-
-  return `${base} • ${duration}`
-}
 
 const SKILLS_ICONS: Record<string, any> = {
   HTML,
@@ -93,8 +42,7 @@ const SKILLS_ICONS: Record<string, any> = {
     {work.map(({ name, startDate, endDate, position, summary, responsibilities, achievements, url, skills, location, location_type }) => {
       const startYear = new Date(startDate).getFullYear()
       const endYear = endDate != null ? new Date(endDate).getFullYear() : "Present"
-      const duration = formatDuration(startDate, endDate)
-      const locationType = formatLocationType(location_type, duration)
+      const locationType = location_type ? location_type.split("•")[0].trim() : ""
       const hasMoreDetails = Boolean(
         (responsibilities && responsibilities.length) ||
         (achievements && achievements.length)
@@ -126,9 +74,13 @@ const SKILLS_ICONS: Record<string, any> = {
                   </span>
                 </div>
               </h3>
-              {(location || locationType) && (
+              {(location || locationType || startDate) && (
                 <div class="text-xs text-skin-muted">
-                  {location} {location && locationType && '-'} {locationType}
+                  {location}
+                  {location && (locationType || startDate) && " - "}
+                  {locationType}
+                  {locationType && startDate && " • "}
+                  <LiveDuration startDate={startDate} endDate={endDate} />
                 </div>
               )}
               <div class="mt-4  print:gap-0 flex flex-col gap-4 print:text-xs text-sm" x-data="{ expanded: false }">

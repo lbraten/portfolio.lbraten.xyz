@@ -22,7 +22,7 @@ You can add a downloadable diploma to any item in `courses` or `certificates` in
 
 ```json
 "diplomaUrl": "/diplomas/ai-3016-diploma.pdf",
-"diplomaLabel": "Last ned diplom"
+"diplomaLabel": "Download Diploma"
 ```
 
 When `diplomaUrl` is present, the Education section automatically shows a clickable download link.

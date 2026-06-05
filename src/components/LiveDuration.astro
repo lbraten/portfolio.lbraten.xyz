@@ -1,0 +1,131 @@
+---
+type Props = {
+    startDate?: string
+    endDate?: string | null
+}
+
+const { startDate = "", endDate = null } = Astro.props
+
+const formatDuration = (startDateStr: string, endDateStr?: string | null) => {
+    if (!startDateStr) {
+    return ""
+    }
+
+    const start = new Date(startDateStr)
+    const end = endDateStr ? new Date(endDateStr) : new Date()
+
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    return ""
+    }
+
+  let totalMonths = (end.getFullYear() - start.getFullYear()) * 12
+    totalMonths += end.getMonth() - start.getMonth()
+
+    if (end.getDate() < start.getDate()) {
+    totalMonths -= 1
+    }
+
+    totalMonths = Math.max(0, totalMonths)
+
+    if (totalMonths === 0) {
+    return "Less than 1 month"
+    }
+
+    const years = Math.floor(totalMonths / 12)
+    const months = totalMonths % 12
+
+    const yearLabel = years === 1 ? "year" : "years"
+    const monthLabel = months === 1 ? "month" : "months"
+
+    if (years > 0 && months > 0) {
+    return `${years} ${yearLabel} and ${months} ${monthLabel}`
+    }
+
+    if (years > 0) {
+    return `${years} ${yearLabel}`
+    }
+
+    return `${months} ${monthLabel}`
+}
+
+const fallbackDuration = formatDuration(startDate, endDate)
+---
+<live-duration data-start-date={startDate} data-end-date={endDate ?? ""}>
+    {fallbackDuration}
+</live-duration>
+
+<script>
+    const COMPONENT_NAME = "live-duration";
+
+    const formatDuration = (startDateStr: string, endDateStr?: string | null) => {
+    if (!startDateStr) {
+        return "";
+    }
+
+    const start = new Date(startDateStr);
+    const end = endDateStr ? new Date(endDateStr) : new Date();
+
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+        return "";
+    }
+
+    let totalMonths = (end.getFullYear() - start.getFullYear()) * 12;
+    totalMonths += end.getMonth() - start.getMonth();
+
+    if (end.getDate() < start.getDate()) {
+        totalMonths -= 1;
+    }
+
+    totalMonths = Math.max(0, totalMonths);
+
+    if (totalMonths === 0) {
+        return "Less than 1 month";
+    }
+
+    const years = Math.floor(totalMonths / 12);
+    const months = totalMonths % 12;
+
+    const yearLabel = years === 1 ? "year" : "years";
+    const monthLabel = months === 1 ? "month" : "months";
+
+    if (years > 0 && months > 0) {
+        return `${years} ${yearLabel} and ${months} ${monthLabel}`;
+    }
+
+    if (years > 0) {
+        return `${years} ${yearLabel}`;
+    }
+
+    return `${months} ${monthLabel}`;
+    };
+
+    if (!customElements.get(COMPONENT_NAME)) {
+    class LiveDurationElement extends HTMLElement {
+        private intervalId: number | null = null;
+
+        connectedCallback() {
+        this.renderDuration();
+
+        if (!this.dataset.endDate) {
+            this.intervalId = window.setInterval(() => {
+            this.renderDuration();
+          }, 60 * 60 * 1000);
+        }
+        }
+
+        disconnectedCallback() {
+        if (this.intervalId !== null) {
+            window.clearInterval(this.intervalId);
+        }
+        }
+
+        private renderDuration() {
+        const startDate = this.dataset.startDate ?? "";
+        const endDate = this.dataset.endDate || null;
+        this.textContent = formatDuration(startDate, endDate);
+        }
+    }
+
+    customElements.define(COMPONENT_NAME, LiveDurationElement);
+    }
+</script>
